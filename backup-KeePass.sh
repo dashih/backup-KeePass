@@ -1,14 +1,16 @@
 #!/bin/sh
 
-# Backup directory
-KeePassDir="/home/dss4f/KeePass-backups"
+# Parse config
+scriptDir="$(dirname "$(readlink -f "$0")")"
+configFile=$scriptDir/config.json
+backupDir=`cat $configFile | jq -r ".backupDir"`
+downloadUrl=`cat $configFile | jq -r ".downloadUrl"`
 
 # State file and functions
-stateFile="$KeePassDir/state.json"
+stateFile="$backupDir/state.json"
 function writeStateFile {
     cat > $stateFile <<- EOF
 {
-    "backupDir": "$KeePassDir",
     "latestBackup": "$1",
     "latestBackupTime": "`date +"%m.%d.%Y at %r"`",
     "numBackups": $2
@@ -17,17 +19,16 @@ EOF
 }
 
 # Download
-downloadLink="`cat $KeePassDir/download`"
 newFileName="`openssl rand -hex 8`.kdbx"
-newFile="$KeePassDir/$newFileName"
+newFile="$backupDir/$newFileName"
 
-wget -O $newFile $downloadLink
+wget -O $newFile $downloadUrl
 
 if [ -e "$stateFile" ]
 then
     # Hash the latest and new files
     latestBackupFileName=`cat $stateFile | jq -r ".latestBackup"`
-    latestHash=`sha256sum $KeePassDir/$latestBackupFileName | awk '{print $1}'`
+    latestHash=`sha256sum $backupDir/$latestBackupFileName | awk '{print $1}'`
     newHash=`sha256sum $newFile | awk '{print $1}'`
     if [ "$newHash" == "$latestHash" ]
     then
