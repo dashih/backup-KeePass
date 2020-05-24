@@ -32,6 +32,29 @@ newFile="$backupDir/$newFileName"
 
 wget -O $newFile $downloadUrl
 
+# Check wget return code and sanity check that the new file exists
+wgetRes=$?
+if [ $wgetRes -ne 0 ]
+then
+    echo "Error code: $wgetRes" | mailx -s "Error downloading latest KeePass backup" dss4f@dannyshih.net
+    exit 1
+fi
+if [ ! -e $newFile ]
+then
+    echo "File is simply not here" | mailx -s "Error downloading latest KeePass backup" dss4f@dannyshih.net
+    exit 2
+fi
+
+# Check file type. Due to the way we generate OneDrive links, wget may
+# download a bunch of HTML content even if the link is invalid.
+fileType=`file $newFile`
+if [[ ! $fileType =~ .*"DBase 3 data file".* ]]
+then
+    echo "OneDrive link is invalid. File is not a KeePass database file. $fileType" | mailx -s "Error downloading latest KeePass backup" dss4f@dannyshih.net
+    exit 3
+fi
+
+# Check if we should keep the new file
 if [ -e "$stateFile" ]
 then
     # Hash the latest and new files
