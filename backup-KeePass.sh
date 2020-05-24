@@ -1,7 +1,9 @@
 #!/bin/sh
 
-# Parse config
+# Get script directory, following symlinks
 scriptDir="$(dirname "$(readlink -f "$0")")"
+
+# Parse config
 configFile=$scriptDir/config.json
 backupDir=`cat $configFile | jq -r ".backupDir"`
 downloadUrl=`cat $configFile | jq -r ".downloadUrl"`
