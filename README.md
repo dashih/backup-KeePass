@@ -7,8 +7,8 @@ wget, jq, openssl, mailx/dovecot/postfix
 ## Instructions
 1. Clone this repo
 2. Copy `config_templ.json` to `config.json` and set all fields
-    a. `backupDir` - Directory to store backup files. Use full path.
-    b. `downloadUrl` - Url to download KeePass database file. See below if you are using OneDrive
+    1. `backupDir` - Directory to store backup files. Use full path.
+    2. `downloadUrl` - Url to download KeePass database file. See below if you are using OneDrive
 3. Run the script in cron. Every 10 minutes recommended.
 
 ## Obtain OneDrive download link
