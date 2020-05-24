@@ -8,6 +8,12 @@ configFile=$scriptDir/config.json
 backupDir=`cat $configFile | jq -r ".backupDir"`
 downloadUrl=`cat $configFile | jq -r ".downloadUrl"`
 
+# Create backup dir if necessary
+if [ ! -d $backupDir ]
+then
+    mkdir $backupDir
+fi
+
 # State file and functions
 stateFile="$backupDir/state.json"
 function writeStateFile {
