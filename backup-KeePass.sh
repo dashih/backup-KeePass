@@ -10,7 +10,11 @@ monitorFile=`cat $configFile | jq -r ".monitorFile"`
 monitorDir=`dirname $monitorFile`
 stateFile="$backupDir/state.json"
 
-# Update state file function
+#
+# Functions.
+#
+
+# Update state file
 function writeStateFile {
     cat > $stateFile <<- EOF
 {
@@ -43,19 +47,22 @@ function copyIfChanged {
 
             numBackups=`cat $stateFile | jq -r ".numBackups"`
             writeStateFile $newFileName $(($numBackups + 1))
-        fi
 
-        # Send an email.
-        read -r -d '' emailMsg <<EOF
+            # Send email only when there's a legit new file.
+            read -r -d '' emailMsg <<EOF
 <p style="font-family: monospace">`cat $stateFile | jq -r ".latestBackup"`</p>
 <p>`cat $stateFile | jq -r ".latestBackupTime"`</p>
 <p>There are <b>`cat $stateFile | jq -r ".numBackups"`</b> historical backup files.</p>
 EOF
 
-        echo -e $emailMsg | mailx -s "$(echo -e "New KeePass Backup\nContent-Type: text/html")" dss4f@dannyshih.net
+            echo -e $emailMsg | mailx -s "$(echo -e "New KeePass Backup\nContent-Type: text/html")" dss4f@dannyshih.net
+        fi
     fi
 }
 
+#
+# Script start
+#
 
 # Initialize if necessary
 if [ ! -d $backupDir ]
@@ -71,7 +78,7 @@ fi
 copyIfChanged
 
 # Set up inotify
-inotifywait -m -e close_write,moved_to,moved_from,create,delete,delete_self $monitorDir |
+inotifywait -m -e modify,close_write,moved_to,moved_from,move_self,delete,delete_self,unmount $monitorDir |
 while read events;
 do
     copyIfChanged
