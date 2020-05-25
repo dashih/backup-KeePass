@@ -27,34 +27,33 @@ function copyIfChanged {
     if [ ! -e $monitorFile ]
     then
         echo "$monitorFile was deleted!" | mailx -s "KeePass db was deleted!" dss4f@dannyshih.net
-        exit 1
-    fi
-
-    # Hash the latest and new files
-    latestBackupFileName=`cat $stateFile | jq -r ".latestBackup"`
-    latestHash=`sha256sum $backupDir/$latestBackupFileName | awk '{print $1}'`
-    newHash=`sha256sum $monitorFile | awk '{print $1}'`
-    if [ "$newHash" == "$latestHash" ]
-    then
-        echo "Same file";
     else
-        # If the hashes differ, copy over the monitored file and update state.
-        newFileName="`openssl rand -hex 8`.kdbx"
-        newFile="$backupDir/$newFileName"
-        cp $monitorFile $newFile
+        # Hash the latest and new files
+        latestBackupFileName=`cat $stateFile | jq -r ".latestBackup"`
+        latestHash=`sha256sum $backupDir/$latestBackupFileName | awk '{print $1}'`
+        newHash=`sha256sum $monitorFile | awk '{print $1}'`
+        if [ "$newHash" == "$latestHash" ]
+        then
+            echo "Same file";
+        else
+            # If the hashes differ, copy over the monitored file and update state.
+            newFileName="`openssl rand -hex 8`.kdbx"
+            newFile="$backupDir/$newFileName"
+            cp $monitorFile $newFile
 
-        numBackups=`cat $stateFile | jq -r ".numBackups"`
-        writeStateFile $newFileName $(($numBackups + 1))
-    fi
+            numBackups=`cat $stateFile | jq -r ".numBackups"`
+            writeStateFile $newFileName $(($numBackups + 1))
+        fi
 
-    # Send an email.
-    read -r -d '' emailMsg <<EOF
+        # Send an email.
+        read -r -d '' emailMsg <<EOF
 <p style="font-family: monospace">`cat $stateFile | jq -r ".latestBackup"`</p>
 <p>`cat $stateFile | jq -r ".latestBackupTime"`</p>
 <p>There are <b>`cat $stateFile | jq -r ".numBackups"`</b> historical backup files.</p>
 EOF
 
-    echo -e $emailMsg | mailx -s "$(echo -e "New KeePass Backup\nContent-Type: text/html")" dss4f@dannyshih.net
+        echo -e $emailMsg | mailx -s "$(echo -e "New KeePass Backup\nContent-Type: text/html")" dss4f@dannyshih.net
+    fi
 }
 
 
