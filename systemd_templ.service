@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup Danny's KeePass database
+RequiresMountsFor=<NFS mount>
+
+[Service]
+Type=simple
+User=dss4f
+ExecStart=<path to backup-KeePass.sh>
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
