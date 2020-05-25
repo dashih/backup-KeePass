@@ -72,7 +72,7 @@ then
 
     # Initialize state. Trickery here: we set state.json as the "initial backup"
     # so the monitored file will definitely be copied.
-    writeStateFile "state.json" 1
+    writeStateFile "state.json" 0
 fi
 
 copyIfChanged
