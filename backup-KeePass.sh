@@ -45,6 +45,9 @@ function copyIfChanged {
             newFile="$backupDir/$newFileName"
             cp $monitorFile $newFile
 
+            # Compress it
+            gzip -9 $newFile
+
             numBackups=`cat $stateFile | jq -r ".numBackups"`
             writeStateFile $newFileName $(($numBackups + 1))
 
