@@ -41,8 +41,11 @@ function copyIfChanged {
             echo "Same file";
         else
             # If the hashes differ, copy over the monitored file and update state.
-            newFileName="`openssl rand -hex 8`.kdbx"
-            newFile="$backupDir/$newFileName"
+            tmpFile=`mktemp`
+            newFileName=`echo $tmpFile | cut -d'.' -f2`.kdbx
+            newFile=$backupDir/$newFileName
+            mv $tmpFile $newFile
+
             cp $monitorFile $newFile
 
             numBackups=`cat $stateFile | jq -r ".numBackups"`
@@ -69,9 +72,12 @@ if [ ! -d $backupDir ]
 then
     # Create backup dir
     mkdir $backupDir
+fi
 
+if [ ! -f $backupDir/state.json ]
+then
     # Initialize state. Trickery here: we set state.json as the "initial backup"
-    # so the monitored file will definitely be copied.
+    # so the monitored file will definitely be copied in the next step.
     writeStateFile "state.json" 0
 fi
 
