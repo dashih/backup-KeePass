@@ -20,6 +20,7 @@ function writeStateFile {
 {
     "latestBackup": "$1",
     "latestBackupTime": "`date +"%m.%d.%Y at %r"`",
+    "latestBackupSize": "`du -hs $backupDir/$1 | awk '{print $1}'`",
     "numBackups": $2
 }
 EOF
@@ -53,7 +54,7 @@ function copyIfChanged {
 
             # Send email only when there's a legit new file.
             read -r -d '' emailMsg <<EOF
-<p style="font-family: monospace">`cat $stateFile | jq -r ".latestBackup"`</p>
+<p style="font-family: monospace">`cat $stateFile | jq -r ".latestBackup"` (`cat $stateFile | jq -r ".latestBackupSize"`)</p>
 <p>`cat $stateFile | jq -r ".latestBackupTime"`</p>
 <p>There are <b>`cat $stateFile | jq -r ".numBackups"`</b> historical backup files.</p>
 EOF
